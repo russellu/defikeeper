@@ -9,6 +9,7 @@ public class Level {
     private int[,] levelMarkers;
     public static bool[,] clearedTiles;
     private GameObject[,] levelPrefabs;
+    public static FloorTile[,] floorTiles; 
     private LevelMaker maker; 
 
     int[] WATER = { 63, 72, 204 };
@@ -26,6 +27,7 @@ public class Level {
         levelPrefabs = new GameObject[lvlTex.width, lvlTex.height];
         clearedTiles = new bool[lvlTex.width, lvlTex.height]; 
         levelMarkers = new int[lvlTex.width, lvlTex.height];
+        floorTiles = new FloorTile[lvlTex.width, lvlTex.height]; 
 
         ParseLvlTex(lvlTex); 
     }
@@ -57,6 +59,8 @@ public class Level {
                 int[] color = { (int)(pix.r * 255), (int)(pix.g * 255), (int)(pix.b * 255) };
 
                 Vector3 position = new Vector3(128 - i*2 - 1, 0.5f, 128 - j*2 - 1);
+
+                floorTiles[i, j] = new FloorTile(i, j, position, null, false);
 
                 if (color[0] == WATER[0] && color[1] == WATER[1] && color[2] == WATER[2])
                 {
@@ -92,6 +96,10 @@ public class Level {
                 {
                     levelMarkers[i, j] = 0;
                     clearedTiles[i, j] = true;
+
+                    floorTiles[i, j] = new FloorTile(i, j, position,
+                     LevelMaker.Instantiate(maker.claimedTile, position - new Vector3(0, 0.5f, 0), Quaternion.identity), true);
+
                     if (position.x < lowestLeft.x && position.z < lowestLeft.z)
                         lowestLeft = position; 
                 }

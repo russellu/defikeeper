@@ -202,7 +202,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 826443314}
   m_LocalRotation: {x: 0.60876137, y: 0, z: 0, w: 0.7933534}
-  m_LocalPosition: {x: 88.6, y: 12, z: -88.2}
+  m_LocalPosition: {x: 88.6, y: 14, z: -88.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -263,8 +263,12 @@ MonoBehaviour:
   dirtCube: {fileID: 2716329579480804239, guid: 826ca32696729b2459e98e71e73cb630, type: 3}
   dirtTag: {fileID: 1836313200969377370, guid: abc69ecdabdb7f844a9d050296c22c15, type: 3}
   tileIndicator: {fileID: 2581642839928826777, guid: 32e8fd7165e235649845c821d32798c1, type: 3}
+  claimedTile: {fileID: 5373870619047771052, guid: 46f569add1e33834ca889b1d80604c51, type: 3}
+  unclaimedTile: {fileID: 4467503699714844719, guid: 2a3aee9061169f84fa7581fab5831e31, type: 3}
   rockBreak: {fileID: 5156912673123980740, guid: 775659f6327a0e345bdee5dac492fd63, type: 3}
   impPrefab: {fileID: 118550, guid: c898f5c5e079f6443984da1f83d1f680, type: 3}
+  openTileIndicator: {fileID: 2581642839928826777, guid: 32e8fd7165e235649845c821d32798c1, type: 3}
+  dugGold: {fileID: 7629033014389105722, guid: 13f89bf922e8dc24cbbc9fa2a2beb7cb, type: 3}
 --- !u!1 &919992799
 GameObject:
   m_ObjectHideFlags: 0

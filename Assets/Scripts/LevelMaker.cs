@@ -15,9 +15,12 @@ public class LevelMaker : MonoBehaviour
     public GameObject dirtCube;
     public GameObject dirtTag;
     public GameObject tileIndicator;
-
+    public GameObject claimedTile;
+    public GameObject unclaimedTile; 
     public GameObject rockBreak; 
-    public GameObject impPrefab; 
+    public GameObject impPrefab;
+    public GameObject openTileIndicator;
+    public GameObject dugGold; 
 
     public int[,] markerTiles;
     GameObject[,] markerObjects; 
@@ -30,17 +33,16 @@ public class LevelMaker : MonoBehaviour
         level = new Level(lvlTex, this);
         markerTiles = new int[lvlTex.width, lvlTex.height];
         markerObjects = new GameObject[lvlTex.width, lvlTex.height];
-        WorkerManager.InitImps(level.lowestLeft, 3, impPrefab);
-        WorkerManager.InitTiles(markerObjects, level.GetLevelPrefabs(), this); 
-
+        WorkerManager.InitTiles(markerObjects, level.GetLevelPrefabs(), Level.floorTiles, this);
+        WorkerManager.InitImps(level.lowestLeft, 8, impPrefab);
     }
-
+    
     // Update is called once per frame
     void Update()
     {
         int[] inds = GetGridRaycast();
         int[,] levelMarkers = level.GetLevelMarkers();
-        GameObject[,] levelPrefabs = level.GetLevelPrefabs(); 
+        GameObject[,] levelPrefabs = level.GetLevelPrefabs();
 
         if (inds != null)
         {
@@ -63,8 +65,8 @@ public class LevelMaker : MonoBehaviour
                     markerTiles[x, y] = 1;
 
                     bool reachable = CheckIfAvailable(x, y);
+                    WorkerManager.AddTask(new CreatureTask(new Tile(x, y, levelPrefabs[x, y], reachable), CreatureTask.DIG_TILE, 0));
 
-                    WorkerManager.AddTile(new Tile(x, y, levelPrefabs[x, y], reachable)); 
                 }
                 else if (markerTiles[x, y] == 1 && tagging == false)
                 {                

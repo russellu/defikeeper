@@ -15,16 +15,12 @@ public class CreatureBehavior : MonoBehaviour
 {
 
     public AudioClip[] audios;
-
     private AudioSource source; 
-
     public Transform destination;
     private NavMeshAgent agent;
     private Animator anim;
-    public bool seekingTile = false; 
-    public Tile currentTile;
-    private Vector3 destPlacement; 
-    public int impId; 
+    public CreatureTask currentTask;
+    public LevelMaker levelMakerInstance; 
 
 
     // Start is called before the first frame update
@@ -33,47 +29,100 @@ public class CreatureBehavior : MonoBehaviour
         source = GetComponent<AudioSource>(); 
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
-
     }
 
-    public Tile AssignDigTile(Tile tile)
+    public float DistanceToTask(CreatureTask newTask)
     {
-        Tile oldTile = currentTile; 
+        return (transform.position - newTask.CurrentPosition()).magnitude;      
+    }
 
-        destPlacement = WorkerManager.GetDigPosition(tile, transform.position);
-        agent.destination = destPlacement;
-        currentTile = tile;
-        seekingTile = true;
+    public bool PrefersTask(CreatureTask newTask)
+    {
 
-        return oldTile; 
+        if (currentTask == null)
+        {
+            return true;
+        }
+        else if ((newTask.priority <= currentTask.priority &&
+                (transform.position - newTask.CurrentPosition()).magnitude <
+                (transform.position - currentTask.CurrentPosition()).magnitude)
+                || newTask.priority < currentTask.priority)
+        {
+            CancelCurrentTask();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private void CancelCurrentTask()
+    {
+        if (currentTask.taskType == CreatureTask.CLAIM_TILE)
+        {
+            anim.SetBool(currentTask.GetTaskAnimatorVariable(), false);
+        }
+        else if (currentTask.taskType == CreatureTask.DIG_TILE)
+        {
+            anim.SetBool(currentTask.GetTaskAnimatorVariable(), false); 
+        }
+    }
+
+    public CreatureTask SetNewTaskAndReturnOldTask(CreatureTask newTask)
+    {
+        CreatureTask oldTask = currentTask;
+        currentTask = newTask;
+
+        if (newTask.taskType == CreatureTask.DIG_TILE)
+            agent.destination = WorkerManager.GetDigPosition(currentTask.tile, transform.position);
+
+        else if (newTask.taskType == CreatureTask.CLAIM_TILE)
+            agent.destination = newTask.CurrentPosition();
+
+        else if (newTask.taskType == CreatureTask.COLLECT_RESOURCE)
+            agent.destination = newTask.CurrentPosition(); 
+
+        return oldTask; 
     }
 
     void Update()
     {
         anim.SetFloat("speed", agent.velocity.magnitude);
 
-        if (seekingTile)
-            if ((transform.position - currentTile.WorldCoords()).magnitude < 2.5f)
-            {
-                anim.SetBool("mining", true);
-            }
-    }
-
-    void HitTile()
-    {
-        currentTile.hitPoints--;
-        if (currentTile.hitPoints == 0)
+        if (currentTask != null)
         {
-            anim.SetBool("mining", false);
-            seekingTile = false;
-            WorkerManager.FinishTile(currentTile, this);
+            if ((agent.destination - transform.position).magnitude < 0.5f)
+            {
+                anim.SetBool(currentTask.GetTaskAnimatorVariable(), true); 
+            }
         }
     }
 
+    void HitTile()
+    {    
+
+        currentTask.tile.hitPoints--;
+
+        if (currentTask.tile.hitPoints == 0)
+        {
+            anim.SetBool("mining", false);
+            CreatureTask newTask = currentTask.CompleteSelf(levelMakerInstance, this);
+            if (newTask != null)
+                WorkerManager.AddTask(newTask); 
+        }
+    }   
+
+    void ClaimTile()
+    {       
+        anim.SetBool("claiming", false);
+        currentTask.CompleteSelf(levelMakerInstance, this);
+        WorkerManager.ScheduleTasks();        
+    }
 
     void Pickaxe()
     {
-        source.PlayOneShot(audios[1]);
+       // source.PlayOneShot(audios[1]);
 
     }
 
